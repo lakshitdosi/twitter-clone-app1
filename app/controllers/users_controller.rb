@@ -17,6 +17,7 @@ class UsersController < ApplicationController
 	def show
 		@user = User.find(params[:id])
 		#debugger
+    @microposts = @user.microposts.paginate(page: params[:page])
 	end
   	def new
   		@user = User.new
@@ -27,9 +28,14 @@ class UsersController < ApplicationController
   		#@user = User.new(params[:user])
       @user = User.new(user_params)
   	if @user.save
-      log_in @user
-      flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+      #log_in @user
+      #flash[:success] = "Welcome to the Sample App!"
+      #redirect_to @user
+      #UserMailer.account_activation(@user).deliver_now
+      @user.send_activation_email
+      flash[:info] = "Please check your email to activate your account."
+      redirect_to root_url
+
   		else 
         render 'new'
   		end
@@ -57,13 +63,13 @@ class UsersController < ApplicationController
       redirect_to(root_url) unless current_user.admin?
     end
 
-    def logged_in_user
-      unless logged_in?
-        store_location
-        flash[:danger] = "Please log in."
-        redirect_to login_url
-      end 
-    end
+    #def logged_in_user
+     # unless logged_in?
+      #  store_location
+       # flash[:danger] = "Please log in."
+        #redirect_to login_url
+      #end 
+    #end
     def correct_user
       @user = User.find(params[:id])
       #redirect_to(root_url) unless @user == current_user
